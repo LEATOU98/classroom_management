@@ -1,177 +1,231 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-</head>
 <body>
-<!-- Admin Sidebar -->
-<aside th:fragment="adminSidebar" class="main-sidebar sidebar-dark-primary elevation-4">
-    <!-- Brand Logo -->
-    <a href="/admin/dashboard" class="brand-link">
-        <i class="fas fa-graduation-cap brand-image"></i>
+
+<!-- ============ ADMIN SIDEBAR ============ -->
+<aside th:fragment="adminSidebar" class="main-sidebar sidebar-dark-danger elevation-4">
+    <a href="/admin/profile" class="brand-link">
+        <i class="fas fa-user-shield fa-2x mr-2"></i>
         <span class="brand-text font-weight-light">Admin Panel</span>
     </a>
-
-    <!-- Sidebar -->
     <div class="sidebar">
-        <!-- Sidebar user panel -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-                <i class="fas fa-user-shield fa-2x text-info"></i>
-            </div>
-            <div class="info">
-                <a href="#" class="d-block" th:text="${#authentication.name}">Admin</a>
-            </div>
+            <div class="image"><i class="fas fa-user-shield fa-2x text-info"></i></div>
+            <div class="info"><a href="#" class="d-block" th:text="${currentUser.fullName}"></a></div>
         </div>
-
-        <!-- Sidebar Menu -->
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                <!-- Dashboard -->
+
                 <li class="nav-item">
-                    <a href="/admin/dashboard" class="nav-link active">
-                        <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <p>Dashboard</p>
+                    <a href="/admin/profile" class="nav-link">
+                        <i class="nav-icon fas fa-id-card"></i>
+                        <p>Hồ sơ cá nhân</p>
                     </a>
                 </li>
 
-                <!-- Quản lý người dùng -->
                 <li class="nav-item has-treeview">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-users"></i>
-                        <p>
-                            Quản lý người dùng
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
+                        <p>Quản lý người dùng<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="/admin/dashboard" class="nav-link">
-                                <i class="fas fa-list nav-icon"></i>
-                                <p>Danh sách người dùng</p>
+                            <a href="/admin/users" class="nav-link">
+                                <i class="fas fa-list nav-icon"></i><p>Danh sách người dùng</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/admin/users/create" class="nav-link">
-                                <i class="fas fa-plus-circle nav-icon"></i>
-                                <p>Tạo người dùng mới</p>
+                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo người dùng mới</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Quản lý khóa học -->
-                <li class="nav-item">
-                    <a href="/admin/courses" class="nav-link">
-                        <i class="nav-icon fas fa-book"></i>
-                        <p>Quản Lý khóa học</p>
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-user-graduate"></i>
+                        <p>Học sinh & Tài chính<i class="right fas fa-angle-left"></i></p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/admin/students" class="nav-link">
+                                <i class="fas fa-list nav-icon"></i><p>Danh sách học sinh</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-book"></i>
+                        <p>Quản lý khóa học<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/admin/courses" class="nav-link">
+                                <i class="fas fa-list nav-icon"></i><p>Danh sách khóa học</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/courses/create" class="nav-link">
+                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo khóa học mới</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-layer-group"></i>
+                        <p>Quản lý nhóm học<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/admin/groups" class="nav-link">
+                                <i class="fas fa-list nav-icon"></i><p>Danh sách nhóm</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/groups/create" class="nav-link">
+                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo nhóm mới</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
             </ul>
         </nav>
     </div>
 </aside>
 
-<!-- Teacher Sidebar -->
+
+<!-- ============ TEACHER SIDEBAR ============ -->
 <aside th:fragment="teacherSidebar" class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="/teacher/dashboard" class="brand-link">
-        <i class="fas fa-chalkboard-teacher brand-image"></i>
+    <a href="/teacher/profile" class="brand-link">
+        <i class="fas fa-chalkboard-teacher fa-2x mr-2"></i>
         <span class="brand-text font-weight-light">Giáo viên</span>
     </a>
-
     <div class="sidebar">
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-                <i class="fas fa-user-tie fa-2x text-success"></i>
-            </div>
-            <div class="info">
-                <a href="#" class="d-block" th:text="${#authentication.name}">Teacher</a>
-            </div>
+            <div class="image"><i class="fas fa-user-tie fa-2x text-success"></i></div>
+            <div class="info"><a href="#" class="d-block" th:text="${currentUser.fullName}"></a></div>
         </div>
-
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                <!-- Dashboard -->
-                <li class="nav-item">
-                    <a href="/teacher/dashboard" class="nav-link active">
-                        <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <p>Dashboard</p>
-                    </a>
-                </li>
 
-                <!-- Quản lý khóa học -->
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-book"></i>
-                        <p>
-                            Quản lý khóa học
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="/teacher/dashboard" class="nav-link">
-                                <i class="fas fa-list nav-icon"></i>
-                                <p>Danh sách khóa học</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/teacher/courses/create" class="nav-link">
-                                <i class="fas fa-plus-circle nav-icon"></i>
-                                <p>Tạo khóa học mới</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <!-- Hồ sơ -->
                 <li class="nav-item">
                     <a href="/teacher/profile" class="nav-link">
                         <i class="nav-icon fas fa-id-card"></i>
                         <p>Hồ sơ cá nhân</p>
                     </a>
                 </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-book"></i>
+                        <p>Quản lý khóa học<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/teacher/courses" class="nav-link">
+                                <i class="fas fa-list nav-icon"></i><p>Danh sách khóa học</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/teacher/courses/create" class="nav-link">
+                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo khóa học mới</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-layer-group"></i>
+                        <p>Quản lý nhóm học<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/teacher/groups" class="nav-link">
+                                <i class="fas fa-list nav-icon"></i><p>Danh sách nhóm</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/teacher/groups/create" class="nav-link">
+                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo nhóm mới</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-user-graduate"></i>
+                        <p>Quản lý học sinh<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/teacher/courses" class="nav-link">
+                                <i class="fas fa-list nav-icon"></i><p>Danh sách học sinh</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/teacher/students/create" class="nav-link">
+                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo học sinh mới</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="/teacher/finances" class="nav-link">
+                        <i class="nav-icon fas fa-money-bill-wave"></i>
+                        <p>Quản lý học phí</p>
+                    </a>
+                </li>
+
             </ul>
         </nav>
     </div>
 </aside>
 
-<!-- Student Sidebar -->
-<aside th:fragment="studentSidebar" class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="/student/dashboard" class="brand-link">
-        <i class="fas fa-user-graduate brand-image"></i>
+
+<!-- ============ STUDENT SIDEBAR ============ -->
+<aside th:fragment="studentSidebar" class="main-sidebar sidebar-dark-success elevation-4">
+    <a href="/student/profile" class="brand-link">
+        <i class="fas fa-user-graduate fa-2x mr-2"></i>
         <span class="brand-text font-weight-light">Học viên</span>
     </a>
-
     <div class="sidebar">
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-                <i class="fas fa-user fa-2x text-warning"></i>
-            </div>
-            <div class="info">
-                <a href="#" class="d-block" th:text="${#authentication.name}">Student</a>
-            </div>
+            <div class="image"><i class="fas fa-user fa-2x text-warning"></i></div>
+            <div class="info"><a href="#" class="d-block" th:text="${currentUser.fullName}"></a></div>
         </div>
-
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                <!-- Dashboard -->
+
                 <li class="nav-item">
-                    <a href="/student/dashboard" class="nav-link active">
-                        <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <p>Dashboard</p>
+                    <a href="/student/profile" class="nav-link">
+                        <i class="nav-icon fas fa-id-card"></i>
+                        <p>Hồ sơ cá nhân</p>
                     </a>
                 </li>
 
-                <!-- Khóa học của tôi -->
                 <li class="nav-item">
-                    <a href="/student/dashboard" class="nav-link">
+                    <a href="/student/courses" class="nav-link">
                         <i class="nav-icon fas fa-book-open"></i>
                         <p>Khóa học của tôi</p>
                     </a>
                 </li>
 
-                <!-- Lịch học -->
+                <li class="nav-item">
+                    <a href="/student/groups" class="nav-link">
+                        <i class="nav-icon fas fa-layer-group"></i>
+                        <p>Nhóm của tôi</p>
+                    </a>
+                </li>
+
                 <li class="nav-item">
                     <a href="/student/schedule" class="nav-link">
                         <i class="nav-icon fas fa-calendar-alt"></i>
@@ -179,16 +233,355 @@
                     </a>
                 </li>
 
-                <!-- Hồ sơ -->
                 <li class="nav-item">
-                    <a href="/student/profile" class="nav-link">
-                        <i class="nav-icon fas fa-id-card"></i>
-                        <p>Hồ sơ cá nhân</p>
+                    <a href="/student/finance" class="nav-link">
+                        <i class="nav-icon fas fa-money-bill-wave"></i>
+                        <p>Học phí của tôi</p>
                     </a>
                 </li>
+
+                <li class="nav-item">
+                    <a href="/student/grades" class="nav-link">
+                        <i class="nav-icon fas fa-star"></i>
+                        <p>Điểm số</p>
+                    </a>
+                </li>
+
             </ul>
         </nav>
     </div>
 </aside>
+
 </body>
 </html>
+
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+<!--<body>-->
+
+<!--&lt;!&ndash; ============ ADMIN SIDEBAR ============ &ndash;&gt;-->
+<!--<aside th:fragment="adminSidebar" class="main-sidebar elevation-4" style="background: linear-gradient(180deg, #4e54c8 0%, #3a3f9e 100%);">-->
+<!--    <a href="/admin/profile" class="brand-link" style="border-bottom: 1px solid rgba(255,255,255,0.1);">-->
+<!--        <i class="fas fa-user-shield fa-2x mr-2 text-white"></i>-->
+<!--        <span class="brand-text font-weight-light text-white">Admin Panel</span>-->
+<!--    </a>-->
+<!--    <div class="sidebar">-->
+<!--        <div class="user-panel mt-3 pb-3 mb-3 d-flex">-->
+<!--            <div class="image"><i class="fas fa-user-shield fa-2x text-warning"></i></div>-->
+<!--            <div class="info"><a href="#" class="d-block text-white" th:text="${currentUser.fullName}"></a></div>-->
+<!--        </div>-->
+<!--        <nav class="mt-2">-->
+<!--            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">-->
+
+<!--                &lt;!&ndash; Hồ sơ cá nhân &ndash;&gt;-->
+<!--                <li class="nav-item">-->
+<!--                    <a href="/admin/profile" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-id-card"></i>-->
+<!--                        <p>Hồ sơ cá nhân</p>-->
+<!--                    </a>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Quản lý người dùng &ndash;&gt;-->
+<!--                <li class="nav-item has-treeview">-->
+<!--                    <a href="#" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-users"></i>-->
+<!--                        <p>Quản lý người dùng<i class="right fas fa-angle-left"></i></p>-->
+<!--                    </a>-->
+<!--                    <ul class="nav nav-treeview">-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/admin/users" class="nav-link text-white">-->
+<!--                                <i class="fas fa-list nav-icon"></i><p>Danh sách người dùng</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/admin/users/create" class="nav-link text-white">-->
+<!--                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo người dùng mới</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Học sinh & Tài chính &ndash;&gt;-->
+<!--                <li class="nav-item has-treeview">-->
+<!--                    <a href="#" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-user-graduate"></i>-->
+<!--                        <p>Học sinh & Tài chính<i class="right fas fa-angle-left"></i></p>-->
+<!--                    </a>-->
+<!--                    <ul class="nav nav-treeview">-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/admin/students" class="nav-link text-white">-->
+<!--                                <i class="fas fa-list nav-icon"></i><p>Danh sách học sinh</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Quản lý khóa học &ndash;&gt;-->
+<!--                <li class="nav-item has-treeview">-->
+<!--                    <a href="#" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-book"></i>-->
+<!--                        <p>Quản lý khóa học<i class="right fas fa-angle-left"></i></p>-->
+<!--                    </a>-->
+<!--                    <ul class="nav nav-treeview">-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/admin/courses" class="nav-link text-white">-->
+<!--                                <i class="fas fa-list nav-icon"></i><p>Danh sách khóa học</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/admin/courses/create" class="nav-link text-white">-->
+<!--                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo khóa học mới</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Quản lý nhóm học &ndash;&gt;-->
+<!--                <li class="nav-item has-treeview">-->
+<!--                    <a href="#" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-layer-group"></i>-->
+<!--                        <p>Quản lý nhóm học<i class="right fas fa-angle-left"></i></p>-->
+<!--                    </a>-->
+<!--                    <ul class="nav nav-treeview">-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/admin/groups" class="nav-link text-white">-->
+<!--                                <i class="fas fa-list nav-icon"></i><p>Danh sách nhóm</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/admin/groups/create" class="nav-link text-white">-->
+<!--                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo nhóm mới</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </li>-->
+
+<!--            </ul>-->
+<!--        </nav>-->
+<!--    </div>-->
+<!--</aside>-->
+
+
+<!--&lt;!&ndash; ============ TEACHER SIDEBAR ============ &ndash;&gt;-->
+<!--<aside th:fragment="teacherSidebar" class="main-sidebar elevation-4" style="background: linear-gradient(180deg, #4e54c8 0%, #3a3f9e 100%);">-->
+<!--    <a href="/teacher/profile" class="brand-link" style="border-bottom: 1px solid rgba(255,255,255,0.1);">-->
+<!--        <i class="fas fa-chalkboard-teacher fa-2x mr-2 text-white"></i>-->
+<!--        <span class="brand-text font-weight-light text-white">Giáo viên</span>-->
+<!--    </a>-->
+<!--    <div class="sidebar">-->
+<!--        <div class="user-panel mt-3 pb-3 mb-3 d-flex">-->
+<!--            <div class="image"><i class="fas fa-user-tie fa-2x text-warning"></i></div>-->
+<!--            <div class="info"><a href="#" class="d-block text-white" th:text="${currentUser.fullName}"></a></div>-->
+<!--        </div>-->
+<!--        <nav class="mt-2">-->
+<!--            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">-->
+
+<!--                &lt;!&ndash; Hồ sơ cá nhân &ndash;&gt;-->
+<!--                <li class="nav-item">-->
+<!--                    <a href="/teacher/profile" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-id-card"></i>-->
+<!--                        <p>Hồ sơ cá nhân</p>-->
+<!--                    </a>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Quản lý khóa học &ndash;&gt;-->
+<!--                <li class="nav-item has-treeview">-->
+<!--                    <a href="#" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-book"></i>-->
+<!--                        <p>Quản lý khóa học<i class="right fas fa-angle-left"></i></p>-->
+<!--                    </a>-->
+<!--                    <ul class="nav nav-treeview">-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/teacher/courses" class="nav-link text-white">-->
+<!--                                <i class="fas fa-list nav-icon"></i><p>Danh sách khóa học</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/teacher/courses/create" class="nav-link text-white">-->
+<!--                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo khóa học mới</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Quản lý nhóm học &ndash;&gt;-->
+<!--                <li class="nav-item has-treeview">-->
+<!--                    <a href="#" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-layer-group"></i>-->
+<!--                        <p>Quản lý nhóm học<i class="right fas fa-angle-left"></i></p>-->
+<!--                    </a>-->
+<!--                    <ul class="nav nav-treeview">-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/teacher/groups" class="nav-link text-white">-->
+<!--                                <i class="fas fa-list nav-icon"></i><p>Danh sách nhóm</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/teacher/groups/create" class="nav-link text-white">-->
+<!--                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo nhóm mới</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Quản lý học sinh &ndash;&gt;-->
+<!--                <li class="nav-item has-treeview">-->
+<!--                    <a href="#" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-user-graduate"></i>-->
+<!--                        <p>Quản lý học sinh<i class="right fas fa-angle-left"></i></p>-->
+<!--                    </a>-->
+<!--                    <ul class="nav nav-treeview">-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/teacher/courses" class="nav-link text-white">-->
+<!--                                <i class="fas fa-list nav-icon"></i><p>Danh sách học sinh</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/teacher/students/create" class="nav-link text-white">-->
+<!--                                <i class="fas fa-plus-circle nav-icon"></i><p>Tạo học sinh mới</p>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Học phí &ndash;&gt;-->
+<!--                <li class="nav-item">-->
+<!--                    <a href="/teacher/finances" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-money-bill-wave"></i>-->
+<!--                        <p>Quản lý học phí</p>-->
+<!--                    </a>-->
+<!--                </li>-->
+
+<!--            </ul>-->
+<!--        </nav>-->
+<!--    </div>-->
+<!--</aside>-->
+
+
+<!--&lt;!&ndash; ============ STUDENT SIDEBAR ============ &ndash;&gt;-->
+<!--<aside th:fragment="studentSidebar" class="main-sidebar elevation-4" style="background: linear-gradient(180deg, #4e54c8 0%, #3a3f9e 100%);">-->
+<!--    <a href="/student/profile" class="brand-link" style="border-bottom: 1px solid rgba(255,255,255,0.1);">-->
+<!--        <i class="fas fa-user-graduate fa-2x mr-2 text-white"></i>-->
+<!--        <span class="brand-text font-weight-light text-white">Học viên</span>-->
+<!--    </a>-->
+<!--    <div class="sidebar">-->
+<!--        <div class="user-panel mt-3 pb-3 mb-3 d-flex">-->
+<!--            <div class="image"><i class="fas fa-user fa-2x text-warning"></i></div>-->
+<!--            <div class="info"><a href="#" class="d-block text-white" th:text="${currentUser.fullName}"></a></div>-->
+<!--        </div>-->
+<!--        <nav class="mt-2">-->
+<!--            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">-->
+
+<!--                &lt;!&ndash; Hồ sơ cá nhân &ndash;&gt;-->
+<!--                <li class="nav-item">-->
+<!--                    <a href="/student/profile" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-id-card"></i>-->
+<!--                        <p>Hồ sơ cá nhân</p>-->
+<!--                    </a>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Khóa học của tôi &ndash;&gt;-->
+<!--                <li class="nav-item">-->
+<!--                    <a href="/student/courses" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-book-open"></i>-->
+<!--                        <p>Khóa học của tôi</p>-->
+<!--                    </a>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Nhóm của tôi &ndash;&gt;-->
+<!--                <li class="nav-item">-->
+<!--                    <a href="/student/groups" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-layer-group"></i>-->
+<!--                        <p>Nhóm của tôi</p>-->
+<!--                    </a>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Lịch học &ndash;&gt;-->
+<!--                <li class="nav-item">-->
+<!--                    <a href="/student/schedule" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-calendar-alt"></i>-->
+<!--                        <p>Lịch học</p>-->
+<!--                    </a>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Học phí &ndash;&gt;-->
+<!--                <li class="nav-item">-->
+<!--                    <a href="/student/finance" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-money-bill-wave"></i>-->
+<!--                        <p>Học phí của tôi</p>-->
+<!--                    </a>-->
+<!--                </li>-->
+
+<!--                &lt;!&ndash; Điểm số &ndash;&gt;-->
+<!--                <li class="nav-item">-->
+<!--                    <a href="/student/grades" class="nav-link text-white">-->
+<!--                        <i class="nav-icon fas fa-star"></i>-->
+<!--                        <p>Điểm số</p>-->
+<!--                    </a>-->
+<!--                </li>-->
+
+<!--            </ul>-->
+<!--        </nav>-->
+<!--    </div>-->
+<!--</aside>-->
+
+<!--&lt;!&ndash; CSS bổ sung để hover và active đẹp hơn &ndash;&gt;-->
+<!--<style>-->
+<!--    /* Sidebar hover effects */-->
+<!--    .nav-sidebar .nav-item .nav-link:hover {-->
+<!--        background: rgba(255, 255, 255, 0.15) !important;-->
+<!--        border-radius: 5px;-->
+<!--    }-->
+
+<!--    .nav-sidebar .nav-item .nav-link.active {-->
+<!--        background: rgba(255, 255, 255, 0.25) !important;-->
+<!--        border-radius: 5px;-->
+<!--        box-shadow: 0 0 15px rgba(78, 84, 200, 0.3);-->
+<!--    }-->
+
+<!--    .nav-sidebar .nav-item .nav-link .nav-icon {-->
+<!--        color: rgba(255, 255, 255, 0.8);-->
+<!--    }-->
+
+<!--    .nav-sidebar .nav-item .nav-link p {-->
+<!--        color: rgba(255, 255, 255, 0.9);-->
+<!--    }-->
+
+<!--    .nav-sidebar .nav-item .nav-link.active .nav-icon,-->
+<!--    .nav-sidebar .nav-item .nav-link.active p {-->
+<!--        color: #ffffff;-->
+<!--    }-->
+
+<!--    /* Tree view */-->
+<!--    .nav-treeview .nav-item .nav-link {-->
+<!--        padding-left: 40px !important;-->
+<!--    }-->
+
+<!--    .nav-treeview .nav-item .nav-link:hover {-->
+<!--        background: rgba(255, 255, 255, 0.1) !important;-->
+<!--        border-radius: 5px;-->
+<!--    }-->
+
+<!--    /* Brand link */-->
+<!--    .brand-link .brand-text {-->
+<!--        color: #ffffff !important;-->
+<!--        font-weight: 500;-->
+<!--    }-->
+
+<!--    .brand-link:hover {-->
+<!--        opacity: 0.9;-->
+<!--    }-->
+
+<!--    /* User panel */-->
+<!--    .user-panel .info a {-->
+<!--        color: #ffffff !important;-->
+<!--    }-->
+
+<!--    .user-panel .info a:hover {-->
+<!--        opacity: 0.8;-->
+<!--    }-->
+<!--</style>-->
+
+<!--</body>-->
+<!--</html>-->

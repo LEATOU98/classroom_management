@@ -49,6 +49,10 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+
+    @Column(length = 500)
+    private String avatarUrl; // URL ảnh đại diện
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
