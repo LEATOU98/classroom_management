@@ -70,15 +70,20 @@ public class MainController {
         // Sắp xếp A-Z
         students.sort(Comparator.comparing(u -> u.getFullName() != null ? u.getLastName().toLowerCase() : ""));
 
-        // Map tài chính cho từng học sinh
+
+        // Map tài chính cho từng học sinh - ĐẢM BẢO KHÔNG NULL
         Map<Long, List<StudentFinance>> financeMap = new HashMap<>();
         Map<Long, BigDecimal> totalDebtMap = new HashMap<>();
 
         for (User student : students) {
             List<StudentFinance> finances = studentFinanceRepository.findByStudentWithDetails(student);
+            if (finances == null) {
+                finances = new ArrayList<>();
+            }
             financeMap.put(student.getId(), finances);
 
             BigDecimal totalDebt = finances.stream()
+                    .filter(f -> f.getRemainingAmount() != null)
                     .map(StudentFinance::getRemainingAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             totalDebtMap.put(student.getId(), totalDebt);
