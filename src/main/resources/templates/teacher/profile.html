@@ -10,7 +10,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <style>
+        /* Avatar lớn trong profile */
+        .profile-avatar-wrapper {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+        }
+
         .profile-avatar-large {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 10px 30px rgba(0, 123, 255, 0.3);
+            border: 4px solid #fff;
+        }
+
+        .profile-avatar-placeholder {
             width: 150px;
             height: 150px;
             border-radius: 50%;
@@ -19,8 +36,99 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
+            font-size: 60px;
+            font-weight: bold;
             box-shadow: 0 10px 30px rgba(0, 123, 255, 0.3);
+            border: 4px solid #fff;
+        }
+
+        /* Nút đổi avatar */
+        .btn-change-avatar {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            color: white;
+            border: 3px solid #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-change-avatar:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #0056b3, #520dc2);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.6);
+        }
+
+        /* Loading spinner */
+        .avatar-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+        }
+
+        .avatar-loading.show {
+            display: flex;
+        }
+
+        /* Nút xóa avatar */
+        .btn-delete-avatar {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            border: 2px solid #fff;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete-avatar.show {
+            display: flex;
+        }
+
+        .btn-delete-avatar:hover {
+            background: #dc3545;
+            transform: scale(1.1);
+        }
+
+        /* Preview ảnh trước khi upload */
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px auto;
+            display: none;
+            border: 3px solid #007bff;
+        }
+
+        .avatar-preview.show {
+            display: block;
         }
     </style>
 </head>
@@ -47,14 +155,75 @@
 
         <section class="content">
             <div class="container-fluid">
+
+                <!-- Thông báo -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                    <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                    <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+
                 <div class="row">
-                    <!-- Thông tin cơ bản -->
+                    <!-- Thông tin cơ bản + Avatar -->
                     <div class="col-md-4">
                         <div class="card">
                             <div class="card-body text-center">
-                                <div class="profile-avatar-large">
-                                    <i class="fas fa-chalkboard-teacher fa-5x"></i>
+
+                                <!-- AVATAR HIỂN THỊ -->
+                                <div class="profile-avatar-wrapper">
+                                    <!-- Có avatar -->
+                                    <img th:if="${user.avatarUrl != null && !user.avatarUrl.isEmpty()}"
+                                         th:src="${user.avatarUrl}"
+                                         class="profile-avatar-large"
+                                         alt="Avatar"
+                                         id="currentAvatar">
+
+                                    <!-- Không có avatar - hiển thị chữ cái -->
+                                    <div th:unless="${user.avatarUrl != null && !user.avatarUrl.isEmpty()}"
+                                         class="profile-avatar-placeholder"
+                                         id="avatarPlaceholder">
+                                        <span th:text="${user.fullName != null ? user.fullName.substring(0,1).toUpperCase() : 'T'}"></span>
+                                    </div>
+
+                                    <!-- Loading overlay -->
+                                    <div class="avatar-loading" id="avatarLoading">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </div>
+
+                                    <!-- Nút đổi avatar -->
+                                    <button class="btn-change-avatar"
+                                            onclick="document.getElementById('avatarFileInput').click()"
+                                            title="Đổi ảnh đại diện">
+                                        <i class="fas fa-camera"></i>
+                                    </button>
+
+                                    <!-- Nút xóa avatar -->
+                                    <button th:if="${user.avatarUrl != null && !user.avatarUrl.isEmpty()}"
+                                            class="btn-delete-avatar show"
+                                            onclick="deleteAvatar()"
+                                            title="Xóa ảnh đại diện">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
+
+                                <!-- Form upload avatar (ẩn) -->
+                                <form id="avatarForm" th:action="@{/profile/upload-avatar}"
+                                      method="post" enctype="multipart/form-data" style="display: none;">
+                                    <input type="file" id="avatarFileInput" name="avatarFile"
+                                           accept="image/*" onchange="previewAndUpload(this)">
+                                </form>
+
+                                <!-- Form xóa avatar (ẩn) -->
+                                <form id="deleteAvatarForm" th:action="@{/profile/delete-avatar}"
+                                      method="post" style="display: none;">
+                                </form>
+
+                                <!-- Preview ảnh trước khi upload -->
+                                <img id="avatarPreview" class="avatar-preview" alt="Preview">
+
                                 <h3 th:text="${user.fullName}"></h3>
                                 <p class="text-muted">
                                     <span class="badge badge-primary" th:text="${user.role}"></span>
@@ -76,6 +245,9 @@
                                     <div th:each="course : ${courses}" class="mb-2">
                                         <span class="badge badge-info" th:text="${course.courseName}"></span>
                                     </div>
+                                    <div th:if="${#lists.isEmpty(courses)}" class="text-center text-muted">
+                                        <small>Chưa có khóa học nào</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -88,10 +260,6 @@
                                 <h3 class="card-title">Chỉnh sửa thông tin</h3>
                             </div>
                             <div class="card-body">
-                                <div th:if="${param.success}" class="alert alert-success">
-                                    <i class="fas fa-check-circle"></i> Cập nhật thành công!
-                                </div>
-
                                 <form th:action="@{/teacher/profile}" method="post" th:object="${user}">
                                     <div class="row">
                                         <div class="col-md-6">
@@ -149,5 +317,48 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+
+<script>
+    // Preview ảnh và tự động upload
+    function previewAndUpload(input) {
+        if (input.files && input.files[0]) {
+            if (input.files[0].size > 5 * 1024 * 1024) {
+                alert('File quá lớn! Vui lòng chọn ảnh dưới 5MB.');
+                input.value = '';
+                return;
+            }
+
+            var validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(input.files[0].type)) {
+                alert('Định dạng không hỗ trợ! Vui lòng chọn JPG, PNG, GIF hoặc WebP.');
+                input.value = '';
+                return;
+            }
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatarPreview').src = e.target.result;
+                document.getElementById('avatarPreview').classList.add('show');
+                document.getElementById('avatarLoading').classList.add('show');
+            }
+            reader.readAsDataURL(input.files[0]);
+
+            document.getElementById('avatarForm').submit();
+        }
+    }
+
+    // Xóa avatar
+    function deleteAvatar() {
+        if (confirm('Bạn có chắc muốn xóa ảnh đại diện?')) {
+            document.getElementById('avatarLoading').classList.add('show');
+            document.getElementById('deleteAvatarForm').submit();
+        }
+    }
+
+    document.getElementById('avatarForm').addEventListener('submit', function() {
+        document.getElementById('avatarLoading').classList.add('show');
+    });
+</script>
+
 </body>
 </html>
