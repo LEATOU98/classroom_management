@@ -3,6 +3,7 @@ package com.example.classroom_management.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "users")
@@ -27,9 +28,16 @@ public class User {
     @Column(length = 20)
     private String phone;
 
+    @Column(columnDefinition = "TEXT")
+    private String note;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_teacher_id")
+    private User assignedTeacher; // Giáo viên phụ trách (cho student)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
@@ -50,6 +58,21 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public String getFormattedCreatedAt() {
+        if (createdAt != null) {
+            return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+        return "";
+    }
+
+    public String getLastName() {
+        if (fullName != null && !fullName.isEmpty()) {
+            String[] parts = fullName.trim().split("\\s+");
+            return parts[parts.length - 1];
+        }
+        return "";
     }
 
     public enum Role {
