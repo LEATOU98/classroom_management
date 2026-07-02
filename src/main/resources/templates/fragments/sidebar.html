@@ -2,7 +2,6 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<!-- ============ ADMIN SIDEBAR ============ -->
 <aside th:fragment="adminSidebar" class="main-sidebar elevation-4" style="background: linear-gradient(180deg, #4e54c8 0%, #3a3f9e 100%); transition: all 0.3s ease;">
     <a href="/admin/profile" class="brand-link" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
         <i class="fas fa-user-shield fa-2x mr-2 text-white"></i>
@@ -11,14 +10,9 @@
     <div class="sidebar">
         <div class="user-panel mt-3 pb-3 mb-3 d-flex align-items-center">
             <div class="image">
-                <!-- Nếu có avatar thì hiển thị ảnh -->
                 <th:block th:if="${currentUser.avatarUrl != null && !currentUser.avatarUrl.isEmpty()}">
-                    <img th:src="${currentUser.avatarUrl}"
-                         class="img-circle elevation-2"
-                         alt="Avatar"
-                         style="width: 35px; height: 35px; object-fit: cover;">
+                    <img th:src="${currentUser.avatarUrl}" class="img-circle elevation-2" alt="Avatar" style="width: 35px; height: 35px; object-fit: cover;">
                 </th:block>
-                <!-- Không có avatar thì hiển thị chữ cái đầu -->
                 <th:block th:unless="${currentUser.avatarUrl != null && !currentUser.avatarUrl.isEmpty()}">
                     <div class="img-circle elevation-2 d-flex align-items-center justify-content-center"
                          style="width: 35px; height: 35px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
@@ -34,103 +28,103 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
-                <!-- Hồ sơ cá nhân - Cấp 1 -->
+                <!-- Hồ sơ cá nhân -->
                 <li class="nav-item">
                     <a href="/admin/profile" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'profile' ? 'active' : ''}">
-                        <i class="nav-icon fas fa-id-card"></i>
-                        <p>Hồ sơ cá nhân</p>
+                        <i class="nav-icon fas fa-id-card"></i><p>Hồ sơ cá nhân</p>
                     </a>
                 </li>
 
-                <!-- Quản lý người dùng - Cấp 2 -->
+                <!-- Quản lý người dùng -->
                 <li class="nav-item has-treeview" th:classappend="${sidebarCurrentPage == 'users' ? 'menu-open' : ''}">
                     <a href="#" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'users' ? 'active' : ''}">
                         <i class="nav-icon fas fa-users"></i>
-                        <p>
-                            Quản lý người dùng
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
+                        <p>Quản lý người dùng<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/admin/users" class="nav-link text-white" th:classappend="${sidebarSubPage == 'users-list' ? 'active' : ''}">
-                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Danh sách</p>
+                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i><p>Danh sách</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/admin/users/create" class="nav-link text-white" th:classappend="${sidebarSubPage == 'users-create' ? 'active' : ''}">
-                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Tạo mới</p>
+                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i><p>Tạo mới</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Học sinh & Tài chính - Cấp 2 -->
+                <!-- Học sinh & Tài chính -->
                 <li class="nav-item has-treeview" th:classappend="${sidebarCurrentPage == 'students' ? 'menu-open' : ''}">
                     <a href="#" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'students' ? 'active' : ''}">
                         <i class="nav-icon fas fa-user-graduate"></i>
-                        <p>
-                            Học sinh & Tài chính
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
+                        <p>Học sinh & Tài chính<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/admin/students" class="nav-link text-white" th:classappend="${sidebarSubPage == 'students-list' ? 'active' : ''}">
-                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Danh sách</p>
+                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i><p>Danh sách</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Quản lý khóa học - Cấp 2 -->
+                <!-- Quản lý khóa học -->
                 <li class="nav-item has-treeview" th:classappend="${sidebarCurrentPage == 'courses' ? 'menu-open' : ''}">
                     <a href="#" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'courses' ? 'active' : ''}">
                         <i class="nav-icon fas fa-book"></i>
-                        <p>
-                            Quản lý khóa học
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
+                        <p>Quản lý khóa học<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/admin/courses" class="nav-link text-white" th:classappend="${sidebarSubPage == 'courses-list' ? 'active' : ''}">
-                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Danh sách</p>
+                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i><p>Danh sách</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/admin/courses/create" class="nav-link text-white" th:classappend="${sidebarSubPage == 'courses-create' ? 'active' : ''}">
-                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Tạo mới</p>
+                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i><p>Tạo mới</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Quản lý nhóm học - Cấp 2 -->
+                <!-- Quản lý nhóm học -->
                 <li class="nav-item has-treeview" th:classappend="${sidebarCurrentPage == 'groups' ? 'menu-open' : ''}">
                     <a href="#" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'groups' ? 'active' : ''}">
                         <i class="nav-icon fas fa-layer-group"></i>
-                        <p>
-                            Quản lý nhóm học
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
+                        <p>Quản lý nhóm học<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/admin/groups" class="nav-link text-white" th:classappend="${sidebarSubPage == 'groups-list' ? 'active' : ''}">
-                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Danh sách</p>
+                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i><p>Danh sách</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/admin/groups/create" class="nav-link text-white" th:classappend="${sidebarSubPage == 'groups-create' ? 'active' : ''}">
-                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Tạo mới</p>
+                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i><p>Tạo mới</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- ===== THÊM: Bài kiểm tra & Điểm số ===== -->
+                <li class="nav-item has-treeview" th:classappend="${sidebarCurrentPage == 'exams' ? 'menu-open' : ''}">
+                    <a href="#" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'exams' ? 'active' : ''}">
+                        <i class="nav-icon fas fa-star"></i>
+                        <p>Bài kiểm tra & Điểm<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/admin/exams" class="nav-link text-white" th:classappend="${sidebarSubPage == 'exams-list' ? 'active' : ''}">
+                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i><p>Danh sách bài kiểm tra</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/exams/create" class="nav-link text-white" th:classappend="${sidebarSubPage == 'exams-create' ? 'active' : ''}">
+                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i><p>Tạo bài kiểm tra mới</p>
                             </a>
                         </li>
                     </ul>
@@ -152,10 +146,7 @@
         <div class="user-panel mt-3 pb-3 mb-3 d-flex align-items-center">
             <div class="image">
                 <th:block th:if="${currentUser.avatarUrl != null && !currentUser.avatarUrl.isEmpty()}">
-                    <img th:src="${currentUser.avatarUrl}"
-                         class="img-circle elevation-2"
-                         alt="Avatar"
-                         style="width: 35px; height: 35px; object-fit: cover;">
+                    <img th:src="${currentUser.avatarUrl}" class="img-circle elevation-2" alt="Avatar" style="width: 35px; height: 35px; object-fit: cover;">
                 </th:block>
                 <th:block th:unless="${currentUser.avatarUrl != null && !currentUser.avatarUrl.isEmpty()}">
                     <div class="img-circle elevation-2 d-flex align-items-center justify-content-center"
@@ -172,95 +163,98 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
-                <!-- Hồ sơ cá nhân - Cấp 1 -->
+                <!-- Hồ sơ cá nhân -->
                 <li class="nav-item">
                     <a href="/teacher/profile" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'profile' ? 'active' : ''}">
-                        <i class="nav-icon fas fa-id-card"></i>
-                        <p>Hồ sơ cá nhân</p>
+                        <i class="nav-icon fas fa-id-card"></i><p>Hồ sơ cá nhân</p>
                     </a>
                 </li>
 
-                <!-- Quản lý khóa học - Cấp 2 -->
+                <!-- Quản lý khóa học -->
                 <li class="nav-item has-treeview" th:classappend="${sidebarCurrentPage == 'courses' ? 'menu-open' : ''}">
                     <a href="#" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'courses' ? 'active' : ''}">
                         <i class="nav-icon fas fa-book"></i>
-                        <p>
-                            Quản lý khóa học
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
+                        <p>Quản lý khóa học<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/teacher/courses" class="nav-link text-white" th:classappend="${sidebarSubPage == 'courses-list' ? 'active' : ''}">
-                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Danh sách</p>
+                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i><p>Danh sách</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/teacher/courses/create" class="nav-link text-white" th:classappend="${sidebarSubPage == 'courses-create' ? 'active' : ''}">
-                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Tạo mới</p>
+                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i><p>Tạo mới</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Quản lý nhóm học - Cấp 2 -->
+                <!-- Quản lý nhóm học -->
                 <li class="nav-item has-treeview" th:classappend="${sidebarCurrentPage == 'groups' ? 'menu-open' : ''}">
                     <a href="#" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'groups' ? 'active' : ''}">
                         <i class="nav-icon fas fa-layer-group"></i>
-                        <p>
-                            Quản lý nhóm học
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
+                        <p>Quản lý nhóm học<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/teacher/groups" class="nav-link text-white" th:classappend="${sidebarSubPage == 'groups-list' ? 'active' : ''}">
-                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Danh sách</p>
+                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i><p>Danh sách</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/teacher/groups/create" class="nav-link text-white" th:classappend="${sidebarSubPage == 'groups-create' ? 'active' : ''}">
-                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Tạo mới</p>
+                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i><p>Tạo mới</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Quản lý học sinh - Cấp 2 -->
+                <!-- Quản lý học sinh -->
                 <li class="nav-item has-treeview" th:classappend="${sidebarCurrentPage == 'students' ? 'menu-open' : ''}">
                     <a href="#" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'students' ? 'active' : ''}">
                         <i class="nav-icon fas fa-user-graduate"></i>
-                        <p>
-                            Quản lý học sinh
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
+                        <p>Quản lý học sinh<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/teacher/students" class="nav-link text-white" th:classappend="${sidebarSubPage == 'students-list' ? 'active' : ''}">
-                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Danh sách</p>
+                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i><p>Danh sách</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/teacher/students/create" class="nav-link text-white" th:classappend="${sidebarSubPage == 'students-create' ? 'active' : ''}">
-                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i>
-                                <p>Tạo mới</p>
+                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i><p>Tạo mới</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Học phí - Cấp 1 -->
+                <!-- Học phí -->
                 <li class="nav-item">
                     <a href="/teacher/finances" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'finances' ? 'active' : ''}">
-                        <i class="nav-icon fas fa-money-bill-wave"></i>
-                        <p>Quản lý học phí</p>
+                        <i class="nav-icon fas fa-money-bill-wave"></i><p>Quản lý học phí</p>
                     </a>
+                </li>
+
+                <!-- ===== THÊM: Bài kiểm tra & Chấm điểm ===== -->
+                <li class="nav-item has-treeview" th:classappend="${sidebarCurrentPage == 'exams' ? 'menu-open' : ''}">
+                    <a href="#" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'exams' ? 'active' : ''}">
+                        <i class="nav-icon fas fa-star"></i>
+                        <p>Bài kiểm tra & Điểm<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/teacher/exams" class="nav-link text-white" th:classappend="${sidebarSubPage == 'exams-list' ? 'active' : ''}">
+                                <i class="fas fa-list nav-icon" style="font-size: 0.6rem;"></i><p>Danh sách bài kiểm tra</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/teacher/exams/create" class="nav-link text-white" th:classappend="${sidebarSubPage == 'exams-create' ? 'active' : ''}">
+                                <i class="fas fa-plus nav-icon" style="font-size: 0.6rem;"></i><p>Tạo bài kiểm tra mới</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
             </ul>
@@ -279,10 +273,7 @@
         <div class="user-panel mt-3 pb-3 mb-3 d-flex align-items-center">
             <div class="image">
                 <th:block th:if="${currentUser.avatarUrl != null && !currentUser.avatarUrl.isEmpty()}">
-                    <img th:src="${currentUser.avatarUrl}"
-                         class="img-circle elevation-2"
-                         alt="Avatar"
-                         style="width: 35px; height: 35px; object-fit: cover;">
+                    <img th:src="${currentUser.avatarUrl}" class="img-circle elevation-2" alt="Avatar" style="width: 35px; height: 35px; object-fit: cover;">
                 </th:block>
                 <th:block th:unless="${currentUser.avatarUrl != null && !currentUser.avatarUrl.isEmpty()}">
                     <div class="img-circle elevation-2 d-flex align-items-center justify-content-center"
@@ -299,51 +290,45 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
-                <!-- Hồ sơ cá nhân - Cấp 1 -->
+                <!-- Hồ sơ cá nhân -->
                 <li class="nav-item">
                     <a href="/student/profile" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'profile' ? 'active' : ''}">
-                        <i class="nav-icon fas fa-id-card"></i>
-                        <p>Hồ sơ cá nhân</p>
+                        <i class="nav-icon fas fa-id-card"></i><p>Hồ sơ cá nhân</p>
                     </a>
                 </li>
 
-                <!-- Khóa học của tôi - Cấp 1 -->
+                <!-- Khóa học của tôi -->
                 <li class="nav-item">
                     <a href="/student/courses" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'courses' ? 'active' : ''}">
-                        <i class="nav-icon fas fa-book-open"></i>
-                        <p>Khóa học của tôi</p>
+                        <i class="nav-icon fas fa-book-open"></i><p>Khóa học của tôi</p>
                     </a>
                 </li>
 
-                <!-- Nhóm của tôi - Cấp 1 -->
+                <!-- Nhóm của tôi -->
                 <li class="nav-item">
                     <a href="/student/groups" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'groups' ? 'active' : ''}">
-                        <i class="nav-icon fas fa-layer-group"></i>
-                        <p>Nhóm của tôi</p>
+                        <i class="nav-icon fas fa-layer-group"></i><p>Nhóm của tôi</p>
                     </a>
                 </li>
 
-                <!-- Lịch học - Cấp 1 -->
+                <!-- Lịch học -->
                 <li class="nav-item">
                     <a href="/student/schedule" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'schedule' ? 'active' : ''}">
-                        <i class="nav-icon fas fa-calendar-alt"></i>
-                        <p>Lịch học</p>
+                        <i class="nav-icon fas fa-calendar-alt"></i><p>Lịch học</p>
                     </a>
                 </li>
 
-                <!-- Học phí - Cấp 1 -->
+                <!-- Học phí -->
                 <li class="nav-item">
                     <a href="/student/finance" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'finance' ? 'active' : ''}">
-                        <i class="nav-icon fas fa-money-bill-wave"></i>
-                        <p>Học phí của tôi</p>
+                        <i class="nav-icon fas fa-money-bill-wave"></i><p>Học phí của tôi</p>
                     </a>
                 </li>
 
-                <!-- Điểm số - Cấp 1 -->
+                <!-- Điểm số -->
                 <li class="nav-item">
                     <a href="/student/grades" class="nav-link text-white" th:classappend="${sidebarCurrentPage == 'grades' ? 'active' : ''}">
-                        <i class="nav-icon fas fa-star"></i>
-                        <p>Điểm số</p>
+                        <i class="nav-icon fas fa-star"></i><p>Điểm số</p>
                     </a>
                 </li>
 
@@ -352,7 +337,8 @@
     </div>
 </aside>
 
-<!-- CSS với hiệu ứng active mới -->
+
+
 <style>
     /* Sidebar cơ bản */
     .main-sidebar {

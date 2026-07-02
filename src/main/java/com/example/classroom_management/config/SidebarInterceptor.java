@@ -46,6 +46,13 @@ public class SidebarInterceptor implements HandlerInterceptor {
                 else if (requestURI.contains("/create")) sidebarSubPage = "groups-create";
                 else sidebarSubPage = "groups-list";
             }
+            // ===== THÊM: Admin Exams =====
+            else if (requestURI.startsWith("/admin/exams")) {
+                sidebarCurrentPage = "exams";
+                if (requestURI.equals("/admin/exams")) sidebarSubPage = "exams-list";
+                else if (requestURI.contains("/create")) sidebarSubPage = "exams-create";
+                else sidebarSubPage = "exams-list";
+            }
         }
         // Teacher routes
         else if (requestURI.startsWith("/teacher/")) {
@@ -73,6 +80,13 @@ public class SidebarInterceptor implements HandlerInterceptor {
             else if (requestURI.startsWith("/teacher/finances")) {
                 sidebarCurrentPage = "finances";
             }
+            // ===== THÊM: Teacher Exams =====
+            else if (requestURI.startsWith("/teacher/exams")) {
+                sidebarCurrentPage = "exams";
+                if (requestURI.equals("/teacher/exams")) sidebarSubPage = "exams-list";
+                else if (requestURI.contains("/create")) sidebarSubPage = "exams-create";
+                else sidebarSubPage = "exams-list";
+            }
         }
         // Student routes
         else if (requestURI.startsWith("/student/")) {
@@ -81,6 +95,7 @@ public class SidebarInterceptor implements HandlerInterceptor {
             else if (requestURI.startsWith("/student/groups")) sidebarCurrentPage = "groups";
             else if (requestURI.startsWith("/student/schedule")) sidebarCurrentPage = "schedule";
             else if (requestURI.startsWith("/student/finance")) sidebarCurrentPage = "finance";
+                // ===== THÊM: Student Grades (ĐÃ CÓ) =====
             else if (requestURI.startsWith("/student/grades")) sidebarCurrentPage = "grades";
         }
 
