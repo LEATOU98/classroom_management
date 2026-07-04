@@ -1126,11 +1126,13 @@ public class MainController {
     private StudentScoreRepository studentScoreRepository;
 
     // ============ QUẢN LÝ BÀI KIỂM TRA - ADMIN ============
+    // ============ ADMIN EXAMS (CẬP NHẬT) ============
     @GetMapping("/admin/exams")
     public String adminExams(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long teacherId,
             @RequestParam(required = false) Long courseId,
+            @RequestParam(required = false) Long groupId,
             Model model, Authentication auth) {
 
         User admin = userRepository.findByUsername(auth.getName());
@@ -1139,31 +1141,73 @@ public class MainController {
         if (search != null && !search.isEmpty()) {
             exams = examRepository.searchExams(search);
             if (teacherId != null) {
-                exams = exams.stream().filter(e -> e.getTeacher().getId().equals(teacherId)).collect(Collectors.toList());
+                final Long tid = teacherId;
+                exams = exams.stream().filter(e -> e.getTeacher().getId().equals(tid)).collect(Collectors.toList());
             }
             if (courseId != null) {
-                exams = exams.stream().filter(e -> e.getCourse().getId().equals(courseId)).collect(Collectors.toList());
+                final Long cid = courseId;
+                exams = exams.stream().filter(e -> e.getCourse().getId().equals(cid)).collect(Collectors.toList());
+            }
+            if (groupId != null) {
+                exams = exams.stream().filter(e -> e.getGroup() != null && e.getGroup().getId().equals(groupId)).collect(Collectors.toList());
             }
         } else if (teacherId != null) {
             User teacher = userRepository.findById(teacherId).orElse(null);
             exams = examRepository.findByTeacher(teacher);
             if (courseId != null) {
-                exams = exams.stream().filter(e -> e.getCourse().getId().equals(courseId)).collect(Collectors.toList());
+                final Long cid = courseId;
+                exams = exams.stream().filter(e -> e.getCourse().getId().equals(cid)).collect(Collectors.toList());
+            }
+            if (groupId != null) {
+                exams = exams.stream().filter(e -> e.getGroup() != null && e.getGroup().getId().equals(groupId)).collect(Collectors.toList());
             }
         } else if (courseId != null) {
             Course course = courseRepository.findById(courseId).orElse(null);
             exams = examRepository.findByCourse(course);
+            if (groupId != null) {
+                exams = exams.stream().filter(e -> e.getGroup() != null && e.getGroup().getId().equals(groupId)).collect(Collectors.toList());
+            }
+        } else if (groupId != null) {
+            StudyGroup group = studyGroupRepository.findById(groupId).orElse(null);
+            exams = examRepository.findByGroup(group);
         } else {
             exams = examRepository.findAllWithDetails();
         }
 
+        // Sắp xếp: cùng khóa -> cùng cô -> cùng nhóm -> thời gian
+        exams.sort(Comparator
+                .comparing((Exam e) -> e.getCourse() != null ? e.getCourse().getCourseName() : "")
+                .thenComparing(e -> e.getTeacher() != null ? e.getTeacher().getFullName() : "")
+                .thenComparing(e -> e.getGroup() != null ? e.getGroup().getGroupName() : "")
+                .thenComparing(Exam::getExamDate, Comparator.nullsLast(Comparator.reverseOrder())));
+
+        List<User> teachers = userRepository.findByRole(User.Role.TEACHER);
+
+        // Filter courses & groups
+        List<Course> filteredCourses = new ArrayList<>();
+        List<StudyGroup> filteredGroups = new ArrayList<>();
+        if (teacherId != null) {
+            User teacher = userRepository.findById(teacherId).orElse(null);
+            if (teacher != null) filteredCourses = courseRepository.findByTeacher(teacher);
+        }
+        if (courseId != null) {
+            Course course = courseRepository.findById(courseId).orElse(null);
+            if (course != null) filteredGroups = studyGroupRepository.findByCourse(course);
+        }
+
         model.addAttribute("currentUser", admin);
+        model.addAttribute("sidebarCurrentPage", "exams");
+        model.addAttribute("sidebarSubPage", "exams-list");
         model.addAttribute("exams", exams);
-        model.addAttribute("teachers", userRepository.findByRole(User.Role.TEACHER));
+        model.addAttribute("teachers", teachers);
         model.addAttribute("allCourses", courseRepository.findAll());
+        model.addAttribute("allGroups", studyGroupRepository.findAll());
+        model.addAttribute("filteredCourses", filteredCourses);
+        model.addAttribute("filteredGroups", filteredGroups);
         model.addAttribute("searchKeyword", search);
         model.addAttribute("selectedTeacherId", teacherId);
         model.addAttribute("selectedCourseId", courseId);
+        model.addAttribute("selectedGroupId", groupId);
 
         return "admin/exams";
     }
@@ -1172,27 +1216,286 @@ public class MainController {
     public String showAdminCreateExamForm(Model model, Authentication auth) {
         User admin = userRepository.findByUsername(auth.getName());
         model.addAttribute("currentUser", admin);
+        model.addAttribute("sidebarCurrentPage", "exams");
+        model.addAttribute("sidebarSubPage", "exams-create");
         model.addAttribute("exam", new Exam());
         model.addAttribute("teachers", userRepository.findByRole(User.Role.TEACHER));
         model.addAttribute("allCourses", courseRepository.findAll());
+        model.addAttribute("allGroups", studyGroupRepository.findAll());
         return "admin/create-exam";
     }
 
     @PostMapping("/admin/exams/create")
     public String adminCreateExam(@ModelAttribute Exam exam,
                                   @RequestParam Long teacherId,
-                                  @RequestParam Long courseId) {
+                                  @RequestParam Long courseId,
+                                  @RequestParam(required = false) Long groupId) {
         exam.setTeacher(userRepository.findById(teacherId).orElseThrow());
         exam.setCourse(courseRepository.findById(courseId).orElseThrow());
+        if (groupId != null) {
+            exam.setGroup(studyGroupRepository.findById(groupId).orElse(null));
+        }
         examRepository.save(exam);
         return "redirect:/admin/exams";
     }
 
+    // ============ TEACHER EXAMS (CẬP NHẬT) ============
+    @GetMapping("/teacher/exams")
+    public String teacherExams(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long courseId,
+            @RequestParam(required = false) Long groupId,
+            Model model, Authentication auth) {
+
+        User teacher = userRepository.findByUsername(auth.getName());
+        List<Exam> exams;
+
+        if (search != null && !search.isEmpty()) {
+            exams = examRepository.searchExams(search);
+            final Long tid = teacher.getId();
+            exams = exams.stream().filter(e -> e.getTeacher().getId().equals(tid)).collect(Collectors.toList());
+        } else {
+            exams = examRepository.findByTeacherWithDetails(teacher);
+        }
+
+        if (courseId != null) {
+            final Long cid = courseId;
+            exams = exams.stream().filter(e -> e.getCourse().getId().equals(cid)).collect(Collectors.toList());
+        }
+        if (groupId != null) {
+            exams = exams.stream().filter(e -> e.getGroup() != null && e.getGroup().getId().equals(groupId)).collect(Collectors.toList());
+        }
+
+        // Sắp xếp
+        exams.sort(Comparator
+                .comparing((Exam e) -> e.getCourse() != null ? e.getCourse().getCourseName() : "")
+                .thenComparing(e -> e.getGroup() != null ? e.getGroup().getGroupName() : "")
+                .thenComparing(Exam::getExamDate, Comparator.nullsLast(Comparator.reverseOrder())));
+
+        List<StudyGroup> filteredGroups = new ArrayList<>();
+        if (courseId != null) {
+            Course course = courseRepository.findById(courseId).orElse(null);
+            if (course != null) filteredGroups = studyGroupRepository.findByCourse(course);
+        }
+
+        model.addAttribute("currentUser", teacher);
+        model.addAttribute("sidebarCurrentPage", "exams");
+        model.addAttribute("sidebarSubPage", "exams-list");
+        model.addAttribute("exams", exams);
+        model.addAttribute("myCourses", courseRepository.findByTeacher(teacher));
+        model.addAttribute("filteredGroups", filteredGroups);
+        model.addAttribute("searchKeyword", search);
+        model.addAttribute("selectedCourseId", courseId);
+        model.addAttribute("selectedGroupId", groupId);
+
+        return "teacher/exams";
+    }
+
+    @GetMapping("/teacher/exams/create")
+    public String showTeacherCreateExamForm(Model model, Authentication auth) {
+        User teacher = userRepository.findByUsername(auth.getName());
+        model.addAttribute("currentUser", teacher);
+        model.addAttribute("sidebarCurrentPage", "exams");
+        model.addAttribute("sidebarSubPage", "exams-create");
+        model.addAttribute("exam", new Exam());
+        model.addAttribute("myCourses", courseRepository.findByTeacher(teacher));
+        model.addAttribute("myGroups", studyGroupRepository.findByTeacher(teacher));
+        return "teacher/create-exam";
+    }
+
+    @PostMapping("/teacher/exams/create")
+    public String teacherCreateExam(@ModelAttribute Exam exam,
+                                    @RequestParam Long courseId,
+                                    @RequestParam(required = false) Long groupId,
+                                    Authentication auth) {
+        User teacher = userRepository.findByUsername(auth.getName());
+        exam.setTeacher(teacher);
+        exam.setCourse(courseRepository.findById(courseId).orElseThrow());
+        if (groupId != null) {
+            exam.setGroup(studyGroupRepository.findById(groupId).orElse(null));
+        }
+        examRepository.save(exam);
+        return "redirect:/teacher/exams";
+    }
+
+
+
+    @GetMapping("/admin/getGroupsByCourse/{courseId}")
+    @ResponseBody
+    public List<Map<String, Object>> getGroupsByCourse(@PathVariable Long courseId) {
+        Course course = courseRepository.findById(courseId).orElse(null);
+        if (course == null) return new ArrayList<>();
+
+        return studyGroupRepository.findByCourse(course).stream().map(g -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", g.getId());
+            map.put("groupName", g.getGroupName());
+            return map;
+        }).collect(Collectors.toList());
+    }
+    // ============ SỬA BÀI KIỂM TRA - ADMIN ============
+    @GetMapping("/admin/exams/edit/{id}")
+    public String showAdminEditExamForm(@PathVariable Long id, Model model, Authentication auth) {
+        User admin = userRepository.findByUsername(auth.getName());
+        Exam exam = examRepository.findById(id).orElseThrow();
+
+        model.addAttribute("currentUser", admin);
+        model.addAttribute("sidebarCurrentPage", "exams");
+        model.addAttribute("sidebarSubPage", "exams-list");
+        model.addAttribute("exam", exam);
+        model.addAttribute("teachers", userRepository.findByRole(User.Role.TEACHER));
+        model.addAttribute("allCourses", courseRepository.findAll());
+
+        // Load groups của course hiện tại
+        if (exam.getCourse() != null) {
+            model.addAttribute("courseGroups", studyGroupRepository.findByCourse(exam.getCourse()));
+        }
+
+        // Load courses của teacher hiện tại
+        if (exam.getTeacher() != null) {
+            model.addAttribute("teacherCourses", courseRepository.findByTeacher(exam.getTeacher()));
+        }
+
+        return "admin/edit-exam";
+    }
+
+    @PostMapping("/admin/exams/edit/{id}")
+    public String adminUpdateExam(@PathVariable Long id,
+                                  @ModelAttribute Exam updatedExam,
+                                  @RequestParam Long teacherId,
+                                  @RequestParam Long courseId,
+                                  @RequestParam(required = false) Long groupId) {
+        Exam exam = examRepository.findById(id).orElseThrow();
+        exam.setExamName(updatedExam.getExamName());
+        exam.setDescription(updatedExam.getDescription());
+        exam.setExamDate(updatedExam.getExamDate());
+        exam.setMaxScore(updatedExam.getMaxScore());
+        exam.setPassScore(updatedExam.getPassScore());
+        exam.setTeacher(userRepository.findById(teacherId).orElseThrow());
+        exam.setCourse(courseRepository.findById(courseId).orElseThrow());
+
+        if (groupId != null) {
+            exam.setGroup(studyGroupRepository.findById(groupId).orElse(null));
+        } else {
+            exam.setGroup(null);
+        }
+
+        examRepository.save(exam);
+        return "redirect:/admin/exams";
+    }
+
+    // ============ XÓA BÀI KIỂM TRA - ADMIN ============
+    @GetMapping("/admin/exams/delete/{id}")
+    public String adminDeleteExam(@PathVariable Long id) {
+        // Xóa tất cả điểm của bài kiểm tra trước
+        Exam exam = examRepository.findById(id).orElseThrow();
+        List<StudentScore> scores = studentScoreRepository.findByExam(exam);
+        studentScoreRepository.deleteAll(scores);
+
+        // Xóa bài kiểm tra
+        examRepository.deleteById(id);
+        return "redirect:/admin/exams";
+    }
+
+
+    // ============ SỬA BÀI KIỂM TRA - TEACHER ============
+    @GetMapping("/teacher/exams/edit/{id}")
+    public String showTeacherEditExamForm(@PathVariable Long id, Model model, Authentication auth) {
+        User teacher = userRepository.findByUsername(auth.getName());
+        Exam exam = examRepository.findById(id).orElseThrow();
+
+        // Kiểm tra quyền: chỉ sửa bài kiểm tra của mình
+        if (!exam.getTeacher().getId().equals(teacher.getId())) {
+            return "redirect:/teacher/exams";
+        }
+
+        model.addAttribute("currentUser", teacher);
+        model.addAttribute("sidebarCurrentPage", "exams");
+        model.addAttribute("sidebarSubPage", "exams-list");
+        model.addAttribute("exam", exam);
+        model.addAttribute("myCourses", courseRepository.findByTeacher(teacher));
+
+        // Load groups của course hiện tại
+        if (exam.getCourse() != null) {
+            model.addAttribute("courseGroups", studyGroupRepository.findByCourse(exam.getCourse()));
+        }
+
+        return "teacher/edit-exam";
+    }
+
+    @PostMapping("/teacher/exams/edit/{id}")
+    public String teacherUpdateExam(@PathVariable Long id,
+                                    @ModelAttribute Exam updatedExam,
+                                    @RequestParam Long courseId,
+                                    @RequestParam(required = false) Long groupId,
+                                    Authentication auth) {
+        User teacher = userRepository.findByUsername(auth.getName());
+        Exam exam = examRepository.findById(id).orElseThrow();
+
+        // Kiểm tra quyền
+        if (!exam.getTeacher().getId().equals(teacher.getId())) {
+            return "redirect:/teacher/exams";
+        }
+
+        exam.setExamName(updatedExam.getExamName());
+        exam.setDescription(updatedExam.getDescription());
+        exam.setExamDate(updatedExam.getExamDate());
+        exam.setMaxScore(updatedExam.getMaxScore());
+        exam.setPassScore(updatedExam.getPassScore());
+        exam.setCourse(courseRepository.findById(courseId).orElseThrow());
+
+        if (groupId != null) {
+            exam.setGroup(studyGroupRepository.findById(groupId).orElse(null));
+        } else {
+            exam.setGroup(null);
+        }
+
+        examRepository.save(exam);
+        return "redirect:/teacher/exams";
+    }
+
+    // ============ XÓA BÀI KIỂM TRA - TEACHER ============
+    @GetMapping("/teacher/exams/delete/{id}")
+    public String teacherDeleteExam(@PathVariable Long id, Authentication auth) {
+        User teacher = userRepository.findByUsername(auth.getName());
+        Exam exam = examRepository.findById(id).orElseThrow();
+
+        // Kiểm tra quyền: chỉ xóa bài kiểm tra của mình
+        if (!exam.getTeacher().getId().equals(teacher.getId())) {
+            return "redirect:/teacher/exams";
+        }
+
+        // Xóa tất cả điểm của bài kiểm tra trước
+        List<StudentScore> scores = studentScoreRepository.findByExam(exam);
+        studentScoreRepository.deleteAll(scores);
+
+        // Xóa bài kiểm tra
+        examRepository.deleteById(id);
+        return "redirect:/teacher/exams";
+    }
+
+
+
+    // ============ CHẤM ĐIỂM - ADMIN ============
     @GetMapping("/admin/exams/{id}/scores")
     public String adminExamScores(@PathVariable Long id, Model model, Authentication auth) {
         User admin = userRepository.findByUsername(auth.getName());
         Exam exam = examRepository.findById(id).orElseThrow();
         List<StudentScore> scores = studentScoreRepository.findByExamWithStudent(exam);
+
+        // Sắp xếp theo tên (chữ cái đầu của từ cuối cùng - tên)
+        scores.sort((s1, s2) -> {
+            String name1 = s1.getStudent().getFullName();
+            String name2 = s2.getStudent().getFullName();
+            if (name1 == null && name2 == null) return 0;
+            if (name1 == null) return 1;
+            if (name2 == null) return -1;
+            String[] parts1 = name1.trim().split("\\s+");
+            String[] parts2 = name2.trim().split("\\s+");
+            String lastName1 = parts1[parts1.length - 1].toLowerCase();
+            String lastName2 = parts2[parts2.length - 1].toLowerCase();
+            return lastName1.compareTo(lastName2);
+        });
 
         // Học sinh trong khóa học nhưng chưa có điểm
         List<User> studentsInCourse = userRepository.findStudentsByCourse(exam.getCourse());
@@ -1200,22 +1503,47 @@ public class MainController {
                 .filter(s -> scores.stream().noneMatch(sc -> sc.getStudent().getId().equals(s.getId())))
                 .collect(Collectors.toList());
 
+        // Thống kê
+        long gradedCount = scores.stream().filter(StudentScore::getIsGraded).count();
+        long passedCount = scores.stream().filter(s -> s.getIsGraded() && s.getScore() != null && s.getScore() >= exam.getPassScore()).count();
+        Double avgScore = scores.stream().filter(StudentScore::getIsGraded).mapToDouble(StudentScore::getScore).average().orElse(0.0);
+
         model.addAttribute("currentUser", admin);
+        model.addAttribute("sidebarCurrentPage", "exams");
         model.addAttribute("exam", exam);
         model.addAttribute("scores", scores);
         model.addAttribute("studentsWithoutScore", studentsWithoutScore);
+        model.addAttribute("gradedCount", gradedCount);
+        model.addAttribute("passedCount", passedCount);
+        model.addAttribute("avgScore", Math.round(avgScore * 10.0) / 10.0);
+        model.addAttribute("totalStudents", scores.size());
 
         return "admin/exam-scores";
     }
 
-    @PostMapping("/admin/exams/{id}/add-score")
-    public String addScore(@PathVariable Long id,
-                           @RequestParam Long studentId,
-                           @RequestParam(required = false) Double score,
-                           @RequestParam(required = false) String comment,
-                           Authentication auth) {
-        Exam exam = examRepository.findById(id).orElseThrow();
-        User student = userRepository.findById(studentId).orElseThrow();
+    @PostMapping("/admin/exams/{examId}/scores/save")
+    @ResponseBody
+    public Map<String, Object> adminSaveScore(@PathVariable Long examId,
+                                              @RequestParam Long studentId,
+                                              @RequestParam Double score,
+                                              @RequestParam(required = false) String comment,
+                                              Authentication auth) {
+        Map<String, Object> result = new HashMap<>();
+
+        Exam exam = examRepository.findById(examId).orElse(null);
+        if (exam == null) {
+            result.put("success", false);
+            result.put("message", "Không tìm thấy bài kiểm tra!");
+            return result;
+        }
+
+        User student = userRepository.findById(studentId).orElse(null);
+        if (student == null) {
+            result.put("success", false);
+            result.put("message", "Không tìm thấy học sinh!");
+            return result;
+        }
+
         User grader = userRepository.findByUsername(auth.getName());
 
         StudentScore studentScore = studentScoreRepository.findByExamAndStudent(exam, student);
@@ -1232,12 +1560,218 @@ public class MainController {
         studentScore.setGradedAt(LocalDateTime.now());
         studentScoreRepository.save(studentScore);
 
-        return "redirect:/admin/exams/" + id + "/scores";
+        result.put("success", true);
+        result.put("message", "Đã lưu điểm cho " + student.getFullName());
+        return result;
     }
 
-    @PostMapping("/admin/exams/{id}/batch-create")
-    public String batchCreateScores(@PathVariable Long id) {
+
+
+    @PostMapping("/admin/exams/{examId}/scores/batch-save")
+    @ResponseBody
+    public Map<String, Object> adminBatchSaveScores(@PathVariable Long examId,
+                                                    @RequestParam Map<String, String> allParams,
+                                                    Authentication auth) {
+        Exam exam = examRepository.findById(examId).orElseThrow();
+        User grader = userRepository.findByUsername(auth.getName());
+        int count = 0;
+
+        for (Map.Entry<String, String> entry : allParams.entrySet()) {
+            if (entry.getKey().startsWith("score_")) {
+                Long studentId = Long.parseLong(entry.getKey().replace("score_", ""));
+                Double score = Double.parseDouble(entry.getValue());
+                String comment = allParams.getOrDefault("comment_" + studentId, "");
+
+                User student = userRepository.findById(studentId).orElse(null);
+                if (student != null) {
+                    StudentScore studentScore = studentScoreRepository.findByExamAndStudent(exam, student);
+                    if (studentScore == null) {
+                        studentScore = new StudentScore();
+                        studentScore.setExam(exam);
+                        studentScore.setStudent(student);
+                    }
+                    studentScore.setScore(score);
+                    studentScore.setComment(comment);
+                    studentScore.setIsGraded(true);
+                    studentScore.setGradedBy(grader);
+                    studentScore.setGradedAt(LocalDateTime.now());
+                    studentScoreRepository.save(studentScore);
+                    count++;
+                }
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "Đã lưu " + count + " điểm");
+        return result;
+    }
+
+    // SỬA method xóa điểm - chỉ set null thay vì xóa bản ghi
+    @GetMapping("/admin/exams/scores/delete/{scoreId}")
+    public String adminDeleteScore(@PathVariable Long scoreId) {
+        StudentScore score = studentScoreRepository.findById(scoreId).orElse(null);
+        if (score != null) {
+            score.setScore(null);
+            score.setComment(null);
+            score.setIsGraded(false);
+            score.setGradedBy(null);
+            score.setGradedAt(null);
+            studentScoreRepository.save(score);
+            return "redirect:/admin/exams/" + score.getExam().getId() + "/scores";
+        }
+        return "redirect:/admin/exams";
+    }
+
+
+    @PostMapping("/admin/exams/{examId}/scores/batch-create")
+    public String adminBatchCreateScores(@PathVariable Long examId) {
+        Exam exam = examRepository.findById(examId).orElseThrow();
+        List<User> students = userRepository.findStudentsByCourse(exam.getCourse());
+
+        int count = 0;
+        for (User student : students) {
+            if (studentScoreRepository.findByExamAndStudent(exam, student) == null) {
+                StudentScore score = new StudentScore();
+                score.setExam(exam);
+                score.setStudent(student);
+                score.setIsGraded(false);
+                studentScoreRepository.save(score);
+                count++;
+            }
+        }
+
+        return "redirect:/admin/exams/" + examId + "/scores";
+    }
+
+
+    // ============ CHẤM ĐIỂM - TEACHER ============
+    @GetMapping("/teacher/exams/{id}/scores")
+    public String teacherExamScores(@PathVariable Long id, Model model, Authentication auth) {
+        User teacher = userRepository.findByUsername(auth.getName());
         Exam exam = examRepository.findById(id).orElseThrow();
+
+        if (!exam.getTeacher().getId().equals(teacher.getId())) {
+            return "redirect:/teacher/exams";
+        }
+
+        List<StudentScore> scores = studentScoreRepository.findByExamWithStudent(exam);
+
+        // Sắp xếp theo tên (chữ cái đầu của từ cuối cùng - tên)
+        scores.sort((s1, s2) -> {
+            String name1 = s1.getStudent().getFullName();
+            String name2 = s2.getStudent().getFullName();
+            if (name1 == null && name2 == null) return 0;
+            if (name1 == null) return 1;
+            if (name2 == null) return -1;
+            String[] parts1 = name1.trim().split("\\s+");
+            String[] parts2 = name2.trim().split("\\s+");
+            String lastName1 = parts1[parts1.length - 1].toLowerCase();
+            String lastName2 = parts2[parts2.length - 1].toLowerCase();
+            return lastName1.compareTo(lastName2);
+        });
+
+        List<User> studentsInCourse = userRepository.findStudentsByCourse(exam.getCourse());
+        List<User> studentsWithoutScore = studentsInCourse.stream()
+                .filter(s -> scores.stream().noneMatch(sc -> sc.getStudent().getId().equals(s.getId())))
+                .collect(Collectors.toList());
+
+        long gradedCount = scores.stream().filter(StudentScore::getIsGraded).count();
+        long passedCount = scores.stream().filter(s -> s.getIsGraded() && s.getScore() != null && s.getScore() >= exam.getPassScore()).count();
+        Double avgScore = scores.stream().filter(StudentScore::getIsGraded).mapToDouble(StudentScore::getScore).average().orElse(0.0);
+
+        model.addAttribute("currentUser", teacher);
+        model.addAttribute("sidebarCurrentPage", "exams");
+        model.addAttribute("exam", exam);
+        model.addAttribute("scores", scores);
+        model.addAttribute("studentsWithoutScore", studentsWithoutScore);
+        model.addAttribute("gradedCount", gradedCount);
+        model.addAttribute("passedCount", passedCount);
+        model.addAttribute("avgScore", Math.round(avgScore * 10.0) / 10.0);
+        model.addAttribute("totalStudents", scores.size());
+
+        return "teacher/exam-scores";
+    }
+
+
+    @PostMapping("/teacher/exams/{examId}/scores/save")
+    @ResponseBody
+    public Map<String, Object> teacherSaveScore(@PathVariable Long examId,
+                                                @RequestParam Long studentId,
+                                                @RequestParam Double score,
+                                                @RequestParam(required = false) String comment,
+                                                Authentication auth) {
+        Map<String, Object> result = new HashMap<>();
+
+        User teacher = userRepository.findByUsername(auth.getName());
+        Exam exam = examRepository.findById(examId).orElse(null);
+
+        if (exam == null) {
+            result.put("success", false);
+            result.put("message", "Không tìm thấy bài kiểm tra!");
+            return result;
+        }
+
+        if (!exam.getTeacher().getId().equals(teacher.getId())) {
+            result.put("success", false);
+            result.put("message", "Bạn không có quyền!");
+            return result;
+        }
+
+        User student = userRepository.findById(studentId).orElse(null);
+        if (student == null) {
+            result.put("success", false);
+            result.put("message", "Không tìm thấy học sinh!");
+            return result;
+        }
+
+        StudentScore studentScore = studentScoreRepository.findByExamAndStudent(exam, student);
+        if (studentScore == null) {
+            studentScore = new StudentScore();
+            studentScore.setExam(exam);
+            studentScore.setStudent(student);
+        }
+
+        studentScore.setScore(score);
+        studentScore.setComment(comment);
+        studentScore.setIsGraded(true);
+        studentScore.setGradedBy(teacher);
+        studentScore.setGradedAt(LocalDateTime.now());
+        studentScoreRepository.save(studentScore);
+
+        result.put("success", true);
+        result.put("message", "Đã lưu điểm cho " + student.getFullName());
+        return result;
+    }
+
+
+
+
+    @GetMapping("/teacher/exams/scores/delete/{scoreId}")
+    public String teacherDeleteScore(@PathVariable Long scoreId, Authentication auth) {
+        User teacher = userRepository.findByUsername(auth.getName());
+        StudentScore score = studentScoreRepository.findById(scoreId).orElse(null);
+        if (score != null && score.getExam().getTeacher().getId().equals(teacher.getId())) {
+            score.setScore(null);
+            score.setComment(null);
+            score.setIsGraded(false);
+            score.setGradedBy(null);
+            score.setGradedAt(null);
+            studentScoreRepository.save(score);
+            return "redirect:/teacher/exams/" + score.getExam().getId() + "/scores";
+        }
+        return "redirect:/teacher/exams";
+    }
+
+    @PostMapping("/teacher/exams/{examId}/scores/batch-create")
+    public String teacherBatchCreateScores(@PathVariable Long examId, Authentication auth) {
+        User teacher = userRepository.findByUsername(auth.getName());
+        Exam exam = examRepository.findById(examId).orElseThrow();
+
+        if (!exam.getTeacher().getId().equals(teacher.getId())) {
+            return "redirect:/teacher/exams";
+        }
+
         List<User> students = userRepository.findStudentsByCourse(exam.getCourse());
 
         for (User student : students) {
@@ -1250,94 +1784,6 @@ public class MainController {
             }
         }
 
-        return "redirect:/admin/exams/" + id + "/scores";
+        return "redirect:/teacher/exams/" + examId + "/scores";
     }
-
-    // ============ QUẢN LÝ BÀI KIỂM TRA - TEACHER ============
-    @GetMapping("/teacher/exams")
-    public String teacherExams(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) Long courseId,
-            Model model, Authentication auth) {
-
-        User teacher = userRepository.findByUsername(auth.getName());
-        List<Exam> exams;
-
-        if (search != null && !search.isEmpty()) {
-            exams = examRepository.searchExams(search);
-            exams = exams.stream().filter(e -> e.getTeacher().getId().equals(teacher.getId())).collect(Collectors.toList());
-        } else {
-            exams = examRepository.findByTeacherWithDetails(teacher);
-        }
-
-        if (courseId != null) {
-            exams = exams.stream().filter(e -> e.getCourse().getId().equals(courseId)).collect(Collectors.toList());
-        }
-
-        model.addAttribute("currentUser", teacher);
-        model.addAttribute("exams", exams);
-        model.addAttribute("myCourses", courseRepository.findByTeacher(teacher));
-        model.addAttribute("searchKeyword", search);
-        model.addAttribute("selectedCourseId", courseId);
-
-        return "teacher/exams";
-    }
-
-    @GetMapping("/teacher/exams/create")
-    public String showTeacherCreateExamForm(Model model, Authentication auth) {
-        User teacher = userRepository.findByUsername(auth.getName());
-        model.addAttribute("currentUser", teacher);
-        model.addAttribute("exam", new Exam());
-        model.addAttribute("myCourses", courseRepository.findByTeacher(teacher));
-        return "teacher/create-exam";
-    }
-
-    @PostMapping("/teacher/exams/create")
-    public String teacherCreateExam(@ModelAttribute Exam exam,
-                                    @RequestParam Long courseId,
-                                    Authentication auth) {
-        User teacher = userRepository.findByUsername(auth.getName());
-        exam.setTeacher(teacher);
-        exam.setCourse(courseRepository.findById(courseId).orElseThrow());
-        examRepository.save(exam);
-        return "redirect:/teacher/exams";
-    }
-
-    @GetMapping("/teacher/exams/{id}/scores")
-    public String teacherExamScores(@PathVariable Long id, Model model, Authentication auth) {
-        User teacher = userRepository.findByUsername(auth.getName());
-        Exam exam = examRepository.findById(id).orElseThrow();
-
-        if (!exam.getTeacher().getId().equals(teacher.getId())) {
-            return "redirect:/teacher/exams";
-        }
-
-        List<StudentScore> scores = studentScoreRepository.findByExamWithStudent(exam);
-        List<User> studentsInCourse = userRepository.findStudentsByCourse(exam.getCourse());
-        List<User> studentsWithoutScore = studentsInCourse.stream()
-                .filter(s -> scores.stream().noneMatch(sc -> sc.getStudent().getId().equals(s.getId())))
-                .collect(Collectors.toList());
-
-        model.addAttribute("currentUser", teacher);
-        model.addAttribute("exam", exam);
-        model.addAttribute("scores", scores);
-        model.addAttribute("studentsWithoutScore", studentsWithoutScore);
-
-        return "teacher/exam-scores";
-    }
-
-    // ============ ĐIỂM SỐ - STUDENT ============
-    @GetMapping("/student/grades")
-    public String studentGrades(Model model, Authentication auth) {
-        User student = userRepository.findByUsername(auth.getName());
-        List<StudentScore> scores = studentScoreRepository.findByStudentWithExam(student);
-        Double averageScore = studentScoreRepository.getAverageScore(student);
-
-        model.addAttribute("currentUser", student);
-        model.addAttribute("scores", scores);
-        model.addAttribute("averageScore", averageScore);
-
-        return "student/grades";
-    }
-
 }

@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Tạo bài kiểm tra - Admin</title>
+    <meta charset="UTF-8"><title>Tạo bài kiểm tra - Admin</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -28,25 +27,32 @@
                                 <textarea th:field="*{description}" class="form-control" rows="3"></textarea>
                             </div>
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Giáo viên *</label>
-                                        <select name="teacherId" class="form-control" required>
+                                        <select name="teacherId" id="teacherSelect" class="form-control" required onchange="loadCourses()">
                                             <option value="">-- Chọn --</option>
                                             <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}"></option>
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Khóa học *</label>
-                                        <select name="courseId" class="form-control" required>
-                                            <option value="">-- Chọn --</option>
-                                            <option th:each="c : ${allCourses}" th:value="${c.id}" th:text="${c.courseName}"></option>
+                                        <select name="courseId" id="courseSelect" class="form-control" required onchange="loadGroups()">
+                                            <option value="">-- Chọn giáo viên trước --</option>
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Nhóm (tùy chọn)</label>
+                                        <select name="groupId" id="groupSelect" class="form-control">
+                                            <option value="">-- Chọn khóa học trước --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Thời gian kiểm tra</label>
                                         <input type="datetime-local" th:field="*{examDate}" class="form-control">
@@ -55,16 +61,10 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Điểm tối đa</label>
-                                        <input type="number" th:field="*{maxScore}" class="form-control" step="0.1" min="0">
-                                    </div>
+                                    <div class="form-group"><label>Điểm tối đa</label><input type="number" th:field="*{maxScore}" class="form-control" step="0.1"></div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Điểm đạt</label>
-                                        <input type="number" th:field="*{passScore}" class="form-control" step="0.1" min="0">
-                                    </div>
+                                    <div class="form-group"><label>Điểm đạt</label><input type="number" th:field="*{passScore}" class="form-control" step="0.1"></div>
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-success btn-lg"><i class="fas fa-save"></i> Tạo</button>
@@ -80,5 +80,28 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script>
+    function loadCourses() {
+        var tid = $('#teacherSelect').val();
+        if (tid) {
+            $.get('/admin/getCoursesByTeacher/' + tid, function(courses) {
+                var opts = '<option value="">-- Chọn khóa học --</option>';
+                courses.forEach(c => opts += '<option value="' + c.id + '">' + c.courseName + '</option>');
+                $('#courseSelect').html(opts);
+                $('#groupSelect').html('<option value="">-- Chọn khóa học trước --</option>');
+            });
+        }
+    }
+    function loadGroups() {
+        var cid = $('#courseSelect').val();
+        if (cid) {
+            $.get('/admin/getGroupsByCourse/' + cid, function(groups) {
+                var opts = '<option value="">-- Tất cả nhóm --</option>';
+                groups.forEach(g => opts += '<option value="' + g.id + '">' + g.groupName + '</option>');
+                $('#groupSelect').html(opts);
+            });
+        }
+    }
+</script>
 </body>
 </html>

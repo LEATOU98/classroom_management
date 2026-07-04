@@ -12,14 +12,17 @@
             transition: 0.3s;
             margin-bottom: 15px;
         }
+
         .exam-card:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             transform: translateY(-3px);
         }
+
         .exam-code {
             font-size: 0.8em;
             color: #6c757d;
         }
+
         .status-badge {
             font-size: 0.85em;
         }
@@ -141,17 +144,17 @@
                                 </p>
                             </div>
                             <div class="card-footer">
-                                <div class="btn-group w-100">
-                                    <a th:href="@{/teacher/exams/{id}/scores(id=${exam.id})}"
-                                       class="btn btn-warning btn-block">
-                                        <i class="fas fa-star mr-1"></i> Chấm điểm
+                                <div class="btn-group btn-group-sm">
+                                    <a th:href="@{/teacher/exams/{id}/scores(id=${exam.id})}" class="btn btn-info"
+                                       title="Chấm điểm">
+                                        <i class="fas fa-star"></i>
                                     </a>
-                                    <a th:href="@{/teacher/exams/edit/{id}(id=${exam.id})}"
-                                       class="btn btn-outline-primary" title="Sửa">
+                                    <a th:href="@{/teacher/exams/edit/{id}(id=${exam.id})}" class="btn btn-warning"
+                                       title="Sửa">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a th:href="@{/teacher/exams/delete/{id}(id=${exam.id})}"
-                                       class="btn btn-outline-danger" title="Xóa"
+                                    <a th:href="@{/teacher/exams/delete/{id}(id=${exam.id})}" class="btn btn-danger"
+                                       title="Xóa"
                                        onclick="return confirm('Xác nhận xóa bài kiểm tra này?')">
                                         <i class="fas fa-trash"></i>
                                     </a>

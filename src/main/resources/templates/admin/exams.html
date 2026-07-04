@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Quản lý Bài kiểm tra - Admin</title>
+    <meta charset="UTF-8"><title>Quản lý Bài kiểm tra - Admin</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -19,26 +18,32 @@
                 <!-- Filter -->
                 <div class="card mb-3">
                     <div class="card-body">
-                        <form th:action="@{/admin/exams}" method="get" class="row">
-                            <div class="col-md-3 mb-2">
+                        <form th:action="@{/admin/exams}" method="get" class="row align-items-end">
+                            <div class="col-md-2 mb-2">
                                 <input type="text" name="search" class="form-control" placeholder="Tìm kiếm..." th:value="${searchKeyword}">
                             </div>
-                            <div class="col-md-3 mb-2">
-                                <select name="teacherId" class="form-control" onchange="this.form.submit()">
+                            <div class="col-md-2 mb-2">
+                                <select name="teacherId" id="filterTeacher" class="form-control" onchange="loadCourses(this.value)">
                                     <option value="">Tất cả giáo viên</option>
                                     <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}" th:selected="${selectedTeacherId == t.id}"></option>
                                 </select>
                             </div>
-                            <div class="col-md-3 mb-2">
-                                <select name="courseId" class="form-control" onchange="this.form.submit()">
+                            <div class="col-md-2 mb-2">
+                                <select name="courseId" id="filterCourse" class="form-control" onchange="loadGroups(this.value)">
                                     <option value="">Tất cả khóa học</option>
-                                    <option th:each="c : ${allCourses}" th:value="${c.id}" th:text="${c.courseName}" th:selected="${selectedCourseId == c.id}"></option>
+                                    <option th:each="c : ${filteredCourses}" th:value="${c.id}" th:text="${c.courseName}" th:selected="${selectedCourseId == c.id}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <select name="groupId" id="filterGroup" class="form-control">
+                                    <option value="">Tất cả nhóm</option>
+                                    <option th:each="g : ${filteredGroups}" th:value="${g.id}" th:text="${g.groupName}" th:selected="${selectedGroupId == g.id}"></option>
                                 </select>
                             </div>
                             <div class="col-md-2 mb-2">
                                 <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-filter"></i> Lọc</button>
                             </div>
-                            <div class="col-md-1 mb-2">
+                            <div class="col-md-2 mb-2">
                                 <a href="/admin/exams" class="btn btn-outline-secondary btn-block"><i class="fas fa-redo"></i></a>
                             </div>
                         </form>
@@ -48,7 +53,7 @@
                 <!-- Table -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Danh sách bài kiểm tra <span class="badge badge-info" th:text="${#lists.size(exams)}"></span></h3>
+                        <h3 class="card-title">Danh sách <span class="badge badge-info" th:text="${#lists.size(exams)}"></span></h3>
                         <div class="card-tools">
                             <a href="/admin/exams/create" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Tạo mới</a>
                         </div>
@@ -59,28 +64,44 @@
                             <tr>
                                 <th>STT</th>
                                 <th>Tên bài kiểm tra</th>
-                                <th>Mô tả</th>
-                                <th>Khóa học</th>
-                                <th>Giáo viên</th>
                                 <th>Thời gian</th>
+                                <th>Giáo viên</th>
+                                <th>Khóa học</th>
+                                <th>Nhóm</th>
+                                <th>Mô tả</th>
                                 <th>Hành động</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr th:each="exam, iterStat : ${exams}">
                                 <td th:text="${iterStat.index + 1}"></td>
-                                <td><strong th:text="${exam.examName}"></strong><br><small class="text-muted" th:text="${exam.examCode}"></small></td>
-                                <td th:text="${exam.description}"></td>
-                                <td><span class="badge badge-primary" th:text="${exam.course.courseName}"></span></td>
-                                <td th:text="${exam.teacher.fullName}"></td>
+                                <td>
+                                    <strong th:text="${exam.examName}"></strong>
+                                    <br><small class="text-muted" th:text="${exam.examCode}"></small>
+                                </td>
                                 <td th:text="${#temporals.format(exam.examDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${exam.teacher.fullName}"></td>
+                                <td><span class="badge badge-primary" th:text="${exam.course.courseName}"></span></td>
+                                <td>
+                                    <span th:if="${exam.group != null}" class="badge badge-info" th:text="${exam.group.groupName}"></span>
+                                    <span th:unless="${exam.group != null}" class="text-muted">-</span>
+                                </td>
+                                <td><small th:text="${exam.description}"></small></td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a th:href="@{/admin/exams/{id}/scores(id=${exam.id})}" class="btn btn-info" title="Chấm điểm"><i class="fas fa-star"></i></a>
-                                        <a th:href="@{/admin/exams/edit/{id}(id=${exam.id})}" class="btn btn-warning" title="Sửa"><i class="fas fa-edit"></i></a>
-                                        <a th:href="@{/admin/exams/delete/{id}(id=${exam.id})}" class="btn btn-danger" title="Xóa" onclick="return confirm('Xác nhận xóa?')"><i class="fas fa-trash"></i></a>
+                                        <a th:href="@{/admin/exams/{id}/scores(id=${exam.id})}" class="btn btn-info" title="Chấm điểm">
+                                            <i class="fas fa-star"></i>
+                                        </a>
+                                        <a th:href="@{/admin/exams/edit/{id}(id=${exam.id})}" class="btn btn-warning" title="Sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a th:href="@{/admin/exams/delete/{id}(id=${exam.id})}" class="btn btn-danger" title="Xóa"
+                                           onclick="return confirm('Xác nhận xóa bài kiểm tra này?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
                                     </div>
                                 </td>
+
                             </tr>
                             </tbody>
                         </table>
@@ -94,5 +115,26 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script>
+    function loadCourses(teacherId) {
+        if (teacherId) {
+            $.get('/admin/getCoursesByTeacher/' + teacherId, function(courses) {
+                var opts = '<option value="">Tất cả khóa học</option>';
+                courses.forEach(c => opts += '<option value="' + c.id + '">' + c.courseName + '</option>');
+                $('#filterCourse').html(opts);
+                $('#filterGroup').html('<option value="">Tất cả nhóm</option>');
+            });
+        }
+    }
+    function loadGroups(courseId) {
+        if (courseId) {
+            $.get('/admin/getGroupsByCourse/' + courseId, function(groups) {
+                var opts = '<option value="">Tất cả nhóm</option>';
+                groups.forEach(g => opts += '<option value="' + g.id + '">' + g.groupName + '</option>');
+                $('#filterGroup').html(opts);
+            });
+        }
+    }
+</script>
 </body>
 </html>

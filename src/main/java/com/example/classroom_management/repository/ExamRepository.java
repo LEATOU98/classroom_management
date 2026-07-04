@@ -17,15 +17,16 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
     List<Exam> findByGroup(StudyGroup group);
     List<Exam> findByCourseOrderByExamDateDesc(Course course);
     Exam findByExamCode(String examCode);
-    
-    @Query("SELECT e FROM Exam e JOIN FETCH e.course JOIN FETCH e.teacher ORDER BY e.examDate DESC")
+
+    @Query("SELECT e FROM Exam e JOIN FETCH e.course JOIN FETCH e.teacher LEFT JOIN FETCH e.group ORDER BY e.course.courseName ASC, e.teacher.fullName ASC, e.group.groupName ASC, e.examDate DESC")
     List<Exam> findAllWithDetails();
-    
-    @Query("SELECT e FROM Exam e JOIN FETCH e.course JOIN FETCH e.teacher WHERE e.teacher = :teacher ORDER BY e.examDate DESC")
+
+    @Query("SELECT e FROM Exam e JOIN FETCH e.course JOIN FETCH e.teacher LEFT JOIN FETCH e.group WHERE e.teacher = :teacher ORDER BY e.course.courseName ASC, e.group.groupName ASC, e.examDate DESC")
     List<Exam> findByTeacherWithDetails(@Param("teacher") User teacher);
-    
-    @Query("SELECT e FROM Exam e JOIN FETCH e.course JOIN FETCH e.teacher WHERE " +
-           "LOWER(e.examName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(e.course.courseName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+
+    @Query("SELECT e FROM Exam e JOIN FETCH e.course JOIN FETCH e.teacher LEFT JOIN FETCH e.group WHERE " +
+            "LOWER(e.examName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(e.course.courseName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(e.teacher.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Exam> searchExams(@Param("keyword") String keyword);
 }
